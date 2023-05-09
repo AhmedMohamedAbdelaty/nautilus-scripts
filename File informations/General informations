@@ -1,19 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# shellcheck disable=SC2001
+# Get the path of the selected file or folder
+path=$(echo -n "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | head -n 1)
 
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-# shellcheck source=/dev/null
-source "${SCRIPT_DIR/%scripts\/*/scripts}/_common_functions"
+# Copy the path to the clipboard
+echo -n "$path" | xclip -selection clipboard
 
-# Initial checks
-_check_dependencies zenity || exit 1
-INPUT_FILES=$(_get_files "$*" "F" "1" "" "") || exit 1
+# Display a notification to indicate that the path has been copied
+zenity --notification --text="$path copied to clipboard"
 
-# Run the main process
-# shellcheck disable=SC2086
-STD_OUTPUT=$(file $INPUT_FILES)
-STD_OUTPUT=$(echo "$STD_OUTPUT" | sed "s|\([^:]*\):[ \t]*\(.*\)|\2: \"\1\"|")
-STD_OUTPUT=$(echo "$STD_OUTPUT" | sort --version-sort)
-
-_display_info_box "$STD_OUTPUT" "File informations"

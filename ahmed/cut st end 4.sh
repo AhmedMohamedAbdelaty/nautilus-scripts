@@ -1,34 +1,21 @@
 #!/bin/bash
 
-# Ask user for input file path
-input_file="$1"
+# Get the path of the selected file
+filename="$1"
 
-# Determine if the input file is an audio or video file
-file_extension="${input_file##*.}"
-if [[ "$file_extension" == "mp3" || "$file_extension" == "wav" || "$file_extension" == "ogg" ]]; then
-    output_extension="mp3"
-else
-    output_extension="mp4"
-fi
+# Prompt user for start and end times
+start_time=$(zenity --entry --text "Enter start time in HH:MM:SS format" --title "Cut Audio/Video" --width 500)
+end_time=$(zenity --entry --text "Enter end time in HH:MM:SS format" --title "Cut Audio/Video" --width 500)
 
-# Ask user for start time in seconds (e.g. 10.5 for 10 seconds and 500 milliseconds)
-start_time="$(zenity --entry --text='Enter the start time in seconds:')"
+# Extract file extension
+extension="${filename##*.}"
 
-# Ask user for end time in seconds (e.g. 30 for 30 seconds)
-end_time="$(zenity --entry --text='Enter the end time in seconds:')"
+# Set output file name
+output="${filename%.*}-cut.$extension"
 
-# Calculate the duration from start time and end time
-duration=$(echo "$end_time - $start_time" | bc)
+# Cut audio or video for specified range
+ffmpeg -i "$filename" -ss "$start_time" -to "$end_time" -c:v libx264 -c:a copy "$output"
 
-# Get the directory path and base filename of the input file
-input_dir="$(dirname "$input_file")"
-input_filename="$(basename "$input_file")"
+# Show message box when finished cutting
+zenity --info --text "Finished cutting $filename from $start_time to $end_time. Output saved at $output."
 
-# Remove the file extension from the base filename
-input_filename_without_ext="${input_filename%.*}"
-
-# Construct the output file path using the input file directory, base filename, and output extension
-output_file="$input_dir/$input_filename_without_ext-$start_time-$end_time.$output_extension"
-
-# Use ffmpeg to cut the segment from the input file and save it to the output file
-ffmpeg -ss "$start_time" -i "$input_file" -t "$duration" -c copy "$output_file"

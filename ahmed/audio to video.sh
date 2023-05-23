@@ -30,7 +30,7 @@ for selected_file in "${selected_files[@]}"; do
             output_video=$(dirname "$input_audio")/$(basename "$input_audio" | cut -f 1 -d '.').mp4
 
             # Extract thumbnail from input audio file
-            thumbnail=$(ffmpeg -i "$input_audio" -filter:v "scale=640:-1" -vframes 1 -q:v 2 "$output_video.jpg" 2>&1 | grep -oP "(?<=thumbnail:).*(?=')")
+            thumbnail=$(ffmpeg -i "$input_audio" -filter:v "scale=w='if(gt(iw,ih),640,-2)':'if(gt(iw,ih),-2,640)',setsar=1" -vframes 1 -q:v 2 "$output_video.jpg" 2>&1 | grep -oP "(?<=thumbnail:).*(?=')")
 
             # Convert audio file to video
             ffmpeg -loop 1 -i "$output_video.jpg" -i "$input_audio" -c:v libx264 -preset fast -tune stillimage -c:a copy -shortest "$output_video"
@@ -56,20 +56,22 @@ for selected_file in "${selected_files[@]}"; do
             output_video=$(dirname "$selected_file")/$(basename "$selected_file" | cut -f 1 -d '.').mp4
 
             # Extract thumbnail from input audio file
-            thumbnail=$(ffmpeg -i "$selected_file" -filter:v "scale=640:-1" -vframes 1 -q:v 2 "$output_video.jpg" 2>&1 | grep -oP "(?<=thumbnail:).*(?=')")
+            thumbnail=$(ffmpeg -i "$selected_file" -filter:v "scale=w='if(gt(iw,ih),640,-2)':'if(gt(iw,ih),-2,640)',setsar=1" -vframes 1 -q:v 2 "$output_video.jpg" 2>&1 | grep -oP "(?<=thumbnail:).*(?=')")
 
             # Convert audio file to video
             ffmpeg -loop 1 -i "$output_video.jpg" -i "$selected_file" -c:v libx264 -preset fast -tune stillimage -c:a copy -shortest "$output_video"
 
-            # Remove thumbnail image file
-            rm "$output_video.jpg"
+                # Remove thumbnail image file
+    rm "$output_video.jpg"
 
-            zenity --info --text="Video conversion for '${selected_file}' completed successfully!"
-
-        else
-            # Selected file is not a directory or an audio file
-            zenity --error --text="Please select a directory containing audio files or an audio file and try again."
-            exit
-        fi
-    fi
+    zenity --info --text="Video conversion for '${selected_file}' completed successfully!"
+else
+    # Selected file is not an audio file
+    zenity --error --text="Please select an audio file and try again."
+    exit
+fi
+fi
 done
+
+
+

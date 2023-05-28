@@ -39,15 +39,12 @@ for selected_file in "${selected_files[@]}"; do
             # Get output video file path in the same directory as input audio file
             output_video=$(dirname "$input_audio")/$(basename "$input_audio" | cut -f 1 -d '.').mp4
 
-            # Create log file in the same directory as input audio file
-            log_file=$(dirname "$input_audio")/$(basename "$input_audio" | cut -f 1 -d '.').log
-
             # Resize image to a width and height that are divisible by 2
             resized_image=$(mktemp).png
             ffmpeg -i "$image_file" -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$resized_image"
 
-            # Convert audio file to video and output any errors or messages to log file
-            ffmpeg -loop 1 -i "$resized_image" -i "$input_audio" -c:v libx264 -preset fast -tune stillimage -c:a aac -b:a 192k -shortest -q:v 1 "$output_video" 2>&1 | tee "$log_file"
+            # Convert audio file to video
+            ffmpeg -loop 1 -i "$resized_image" -i "$input_audio" -c:v libx264 -preset fast -tune stillimage -c:a copy -shortest -pix_fmt yuv420p "$output_video"
 
             #zenity --info --text="Video conversion for '${input_audio}' completed successfully!"
         done
@@ -66,15 +63,12 @@ for selected_file in "${selected_files[@]}"; do
             # Get output video file path in the same directory as input audio file
             output_video=$(dirname "$selected_file")/$(basename "$selected_file" | cut -f 1 -d '.').mp4
 
-            # Create log file in the same directory as input audio file
-            log_file=$(dirname "$selected_file")/$(basename "$selected_file" | cut -f 1 -d '.').log
-
             # Resize image to a width and height that are divisible by 2
             resized_image=$(mktemp).png
             ffmpeg -i "$image_file" -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$resized_image"
 
-            # Convert audio file to video and output any errors or messages to log file
-            ffmpeg -loop 1 -i "$resized_image" -i "$selected_file" -c:v libx264 -preset fast -tune stillimage -c:a aac -b:a 192k -shortest -q:v 1 "$output_video" 2>&1 | tee "$log_file"
+            # Convert audio file to video
+            ffmpeg -loop 1 -i "$resized_image" -i "$selected_file" -c:v libx264 -preset fast -tune stillimage -c:a copy -shortest -pix_fmt yuv420p "$output_video"
 
             zenity --info --text="Video conversion for '${selected_file}' completed successfully!"
         else

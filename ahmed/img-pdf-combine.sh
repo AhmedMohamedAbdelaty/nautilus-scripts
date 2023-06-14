@@ -21,3 +21,5 @@ output_dir=$(dirname "${selected_files[0]}")
 
 # convert images to pdf
 convert "${selected_files[@]}" "${output_dir}/converted_combined.pdf"
+
+zenity --info --text="conversion complete." --title="Converter"
